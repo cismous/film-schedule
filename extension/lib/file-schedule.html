@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en" style="width: 400px; height: 100px; overflow-y: auto">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="./antd.min.css" />
+    <title>File schedule</title>
+
+    <style>
+      #root {
+        height: 100%;
+      }
+
+      .app {
+        padding: 20px 12px;
+      }
+
+      .app > .list {
+        display: flex;
+        align-items: center;
+        overflow: hidden;
+        padding-bottom: 4px;
+      }
+
+      .app > .list .label {
+        width: 7em;
+        text-align: right;
+      }
+
+      .app > .list a {
+        margin-left: 12px;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div id="root"></div>
+    <script src="./react.production.min.js"></script>
+    <script src="./react-dom.production.min.js"></script>
+    <script src="./antd.min.js"></script>
+    <script src="./file-schedule.js"></script>
+  </body>
+</html>

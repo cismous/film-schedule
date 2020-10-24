@@ -1,0 +1,27 @@
+{
+  "name": "File schedule",
+  "version": "0.0.1",
+  "browser_action": {
+    "default_icon": "lib/images/logo.png",
+    "default_title": "File schedule",
+    "default_popup": "lib/file-schedule.html"
+  },
+  "icons": {
+    "16": "lib/images/logo.png",
+    "48": "lib/images/logo.png",
+    "128": "lib/images/logo.png"
+  },
+  "background": {
+    "scripts": ["/lib/page.js"]
+  },
+  "content_scripts": [
+    {
+      "matches": ["http://showtime-prd-cmc.wandafilm.com/*"],
+      "css": ["/lib/antd.min.css"],
+      "js": ["/lib/react.production.min.js", "/lib/react-dom.production.min.js", "/lib/antd.min.js", "/lib/page.js"]
+    }
+  ],
+  "permissions": ["tabs", "cookies", "notifications", "\u003Call_urls\u003E", "unlimitedStorage", "storage"],
+  "minimum_chrome_version": "80",
+  "manifest_version": 2
+}

@@ -1,0 +1,9 @@
+{
+  "compilerOptions": {
+    "outDir": "extension/lib/",
+    "jsx": "react",
+    "locale": "zh-CN",
+    "lib": ["dom", "ES2018"]
+  },
+  "include": ["./src/**/*", "./node_modules/antd/**/*"]
+}

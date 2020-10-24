@@ -1,0 +1,35 @@
+{
+    "files.associations": {
+        "*.css": "less"
+    },
+    "files.trimTrailingWhitespace": true,
+    "files.insertFinalNewline": true,
+    "editor.tabSize": 2,
+    "editor.formatOnSave": true,
+    "[jsonc]": {
+        "editor.defaultFormatter": "esbenp.prettier-vscode"
+    },
+    "[typescriptreact]": {
+        "editor.defaultFormatter": "esbenp.prettier-vscode"
+    },
+    "[html]": {
+        "editor.defaultFormatter": "esbenp.prettier-vscode"
+    },
+    "[typescript]": {
+        "editor.defaultFormatter": "esbenp.prettier-vscode"
+    },
+    "editor.codeActionsOnSave": [
+        "source.organizeImports",
+        "source.fixAll"
+    ],
+    "cSpell.words": [
+        "antd",
+        "camelcase",
+        "datamap",
+        "didiglobal",
+        "popconfirm",
+        "pruid",
+        "tinymce"
+    ],
+    "deno.enable": false,
+}
