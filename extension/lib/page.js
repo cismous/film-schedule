@@ -34,6 +34,7 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
         if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
     }
 };
+/* eslint-disable react/jsx-no-undef */
 var dom = document.createElement('div');
 dom.classList.add('clearfix');
 var i18nDay = {
@@ -44,30 +45,6 @@ var i18nDay = {
     4: '周四',
     5: '周五',
     6: '周六'
-};
-/**
- * 睡眠时间
- */
-var sleep = function (ts) {
-    if (ts === void 0) { ts = 0; }
-    return new Promise(function (resolve) { return setTimeout(resolve, ts); });
-};
-/**
- * 检查当前是否加载完成
- */
-var spinnerLoaded = function () {
-    return new Promise(function (resolve) {
-        var check = function () {
-            setTimeout(function () {
-                var list = document.querySelectorAll('body > .spinner');
-                if (list.length === 0)
-                    resolve();
-                else
-                    check();
-            }, 200);
-        };
-        check();
-    });
 };
 function autoMax() {
     return __awaiter(this, void 0, void 0, function () {
@@ -101,7 +78,7 @@ function edit(dayOffset) {
         var calendarList, index, btn;
         return __generator(this, function (_b) {
             switch (_b.label) {
-                case 0: return [4 /*yield*/, sleep(500)];
+                case 0: return [4 /*yield*/, sleep(200)];
                 case 1:
                     _b.sent();
                     return [4 /*yield*/, spinnerLoaded()];
@@ -114,6 +91,7 @@ function edit(dayOffset) {
                         return ((_a = item.querySelector('.date')) === null || _a === void 0 ? void 0 : _a.textContent) === String(curMonthDay);
                     });
                     btn = (_a = calendarList[index + dayOffset]) === null || _a === void 0 ? void 0 : _a.querySelectorAll('button');
+                    updateQuery({ dayOffset: dayOffset });
                     if (!((btn === null || btn === void 0 ? void 0 : btn.length) > 1)) return [3 /*break*/, 4];
                     btn[1].click();
                     return [4 /*yield*/, autoMax()];
@@ -150,7 +128,7 @@ function APP() {
                                     times = 0;
                                     execute = function () {
                                         setTimeout(function () { return __awaiter(_this, void 0, void 0, function () {
-                                            var dom, opt, i;
+                                            var dom, opt, i, dayOffset;
                                             return __generator(this, function (_a) {
                                                 switch (_a.label) {
                                                     case 0:
@@ -168,10 +146,11 @@ function APP() {
                                                         dom.selectedIndex = i;
                                                         document.getElementById('select2-cinemaId-container').textContent = opt.textContent;
                                                         document.getElementById('search-schedule').click();
-                                                        return [4 /*yield*/, edit()];
+                                                        dayOffset = getQuery('dayOffset', 'number');
+                                                        return [4 /*yield*/, edit(dayOffset)];
                                                     case 2:
                                                         _a.sent();
-                                                        setEditDay(0);
+                                                        setEditDay(dayOffset);
                                                         autoMax();
                                                         resolve();
                                                         return [3 /*break*/, 4];

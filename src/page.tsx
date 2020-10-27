@@ -1,6 +1,4 @@
-/* eslint-disable prefer-rest-params */
-declare const antd: any
-
+/* eslint-disable react/jsx-no-undef */
 const dom = document.createElement('div')
 dom.classList.add('clearfix')
 
@@ -12,27 +10,6 @@ const i18nDay = {
   4: '周四',
   5: '周五',
   6: '周六',
-}
-
-/**
- * 睡眠时间
- */
-const sleep = (ts = 0) => new Promise((resolve) => setTimeout(resolve, ts))
-
-/**
- * 检查当前是否加载完成
- */
-const spinnerLoaded = () => {
-  return new Promise((resolve) => {
-    const check = () => {
-      setTimeout(() => {
-        const list = document.querySelectorAll('body > .spinner')
-        if (list.length === 0) resolve()
-        else check()
-      }, 200)
-    }
-    check()
-  })
 }
 
 async function autoMax() {
@@ -49,7 +26,7 @@ async function autoMax() {
  * @param dayOffset 距离当天时间天数的偏移值
  */
 async function edit(dayOffset = 0) {
-  await sleep(500)
+  await sleep(200)
   await spinnerLoaded()
   const calendarList = Array.from(document.querySelectorAll('#calendar .calendar-date li'))
   const index = calendarList.findIndex((item) => {
@@ -57,6 +34,7 @@ async function edit(dayOffset = 0) {
     return item.querySelector('.date')?.textContent === String(curMonthDay)
   })
   const btn = calendarList[index + dayOffset]?.querySelectorAll('button')
+  updateQuery({ dayOffset })
   if (btn?.length > 1) {
     btn[1].click()
     await autoMax()
@@ -91,8 +69,9 @@ function APP() {
               dom.selectedIndex = i
               document.getElementById('select2-cinemaId-container').textContent = opt.textContent
               document.getElementById('search-schedule').click()
-              await edit()
-              setEditDay(0)
+              const dayOffset = getQuery<number>('dayOffset', 'number')
+              await edit(dayOffset)
+              setEditDay(dayOffset)
               autoMax()
               resolve()
               break

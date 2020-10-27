@@ -1,5 +1,6 @@
 {
   "compilerOptions": {
+    "esModuleInterop": true,
     "outDir": "extension/lib/",
     "jsx": "react",
     "locale": "zh-CN",
