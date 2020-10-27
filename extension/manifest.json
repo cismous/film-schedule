@@ -1,10 +1,10 @@
 {
-  "name": "File schedule",
+  "name": "Film schedule",
   "version": "0.0.1",
   "browser_action": {
     "default_icon": "lib/images/logo.png",
-    "default_title": "File schedule",
-    "default_popup": "lib/file-schedule.html"
+    "default_title": "Film schedule",
+    "default_popup": "lib/popup.html"
   },
   "icons": {
     "16": "lib/images/logo.png",

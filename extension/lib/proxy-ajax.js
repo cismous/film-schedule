@@ -55,7 +55,6 @@ var __spreadArrays = (this && this.__spreadArrays) || function () {
 var saveData = null;
 var detailUrl = null;
 var detail = null;
-var cacheBeforeDayDetail = {};
 /**
  * 格式化时间
  * @param startTime 开始时间
@@ -233,20 +232,17 @@ function init() {
                                                     margin: '5px',
                                                     padding: '5px',
                                                     border: "1px solid " + (selected ? 'red' : '#e1e1e1'),
-                                                    minWidth: '164px',
-                                                    minHeight: '82px',
-                                                    cursor: 'pointer',
-                                                    position: 'relative',
-                                                    zoom: 1
+                                                    minWidth: '158px',
+                                                    cursor: 'pointer'
                                                 }, onClick: function () { return onClick(film); } },
-                                                React.createElement("div", null, film.filmName),
-                                                React.createElement("div", null,
+                                                React.createElement("div", { style: { fontWeight: 700 } }, film.filmName),
+                                                React.createElement("div", { style: { color: 'gray', fontSize: '12px', paddingTop: '4px' } },
                                                     "\u7247\u957F:",
                                                     film.duration,
-                                                    " \u5206\u949F [",
+                                                    "\u5206\u949F [",
                                                     film.price,
                                                     "]\u5143"),
-                                                React.createElement("div", null,
+                                                React.createElement("div", { style: { color: 'gray', fontSize: '12px' } },
                                                     "\u65F6\u6BB5:[",
                                                     startTime,
                                                     "-",
@@ -260,40 +256,12 @@ function init() {
                                                 var _this = this;
                                                 var hall = props.hall, detail = props.detail;
                                                 var _a = React.useState(null), selectedFilm = _a[0], setSelectedFilm = _a[1];
-                                                var _b = React.useState(false), loading = _b[0], setLoading = _b[1];
-                                                var _c = React.useState(function () {
+                                                var _b = React.useState(function () {
                                                     var result = getQuery('smartHallIndex', 'number') === i;
                                                     if (result)
                                                         updateQuery({ smartHallIndex: null });
                                                     return result;
-                                                }), visible = _c[0], setVisible = _c[1];
-                                                var _d = React.useState(7), beforeDay = _d[0], setBeforeDay = _d[1];
-                                                var _e = React.useState(null), beforeDayDetail = _e[0], setBeforeDayDetail = _e[1];
-                                                React.useEffect(function () {
-                                                    if (!visible)
-                                                        return;
-                                                    var didCancel = false;
-                                                    var cinemaId = getQuery('cinemaId', 'number', detailUrl.split('?')[1]);
-                                                    var date = formatTime(new Date(getQuery('date', 'string', detailUrl.split('?')[1])).getTime() -
-                                                        beforeDay * 86400 * 1000).split(' ')[0];
-                                                    if (cacheBeforeDayDetail["" + cinemaId + date]) {
-                                                        setBeforeDayDetail(cacheBeforeDayDetail["" + cinemaId + date]);
-                                                    }
-                                                    else {
-                                                        setLoading(true);
-                                                        Mtime.Net.Ajax.get("/schedule/detail?usage=view&cinemaId=" + cinemaId + "&date=" + date).json(function (data) {
-                                                            if (didCancel)
-                                                                return;
-                                                            setLoading(false);
-                                                            cacheBeforeDayDetail["" + cinemaId + date] = data.value;
-                                                            setBeforeDayDetail(data.value);
-                                                        });
-                                                    }
-                                                    return function () { return (didCancel = true); };
-                                                }, [visible, beforeDay]);
-                                                var film = React.useMemo(function () { var _a, _b; return (_b = (_a = beforeDayDetail === null || beforeDayDetail === void 0 ? void 0 : beforeDayDetail.halls[i]) === null || _a === void 0 ? void 0 : _a.showtimes[0]) === null || _b === void 0 ? void 0 : _b.films[0]; }, [
-                                                    beforeDayDetail,
-                                                ]);
+                                                }), visible = _b[0], setVisible = _b[1];
                                                 var a = detail.films.A.filter(function (film) {
                                                     return Boolean(film.supportHallFormats.find(function (format) { return hall.formatCodes.includes(format); }));
                                                 });
@@ -307,28 +275,30 @@ function init() {
                                                     return Boolean(film.supportHallFormats.find(function (format) { return hall.formatCodes.includes(format); }));
                                                 });
                                                 return (React.createElement("div", { style: { display: 'flex', marginTop: '8px' } },
-                                                    React.createElement(antd.Button, { disabled: !hall.showtimes.length, style: { marginLeft: 'auto' }, size: 'small', danger: true, onClick: function () {
-                                                            antd.Modal.confirm({
-                                                                title: '是否清空排片',
-                                                                content: '清空排片后数据不可恢复，请确认',
-                                                                onOk: function () { return __awaiter(_this, void 0, void 0, function () {
-                                                                    return __generator(this, function (_a) {
-                                                                        switch (_a.label) {
-                                                                            case 0: return [4 /*yield*/, Promise.all(hall.showtimes.map(function (showtime) {
-                                                                                    return new Promise(function (resolve) {
-                                                                                        Mtime.Net.Ajax.get("/showtime/delete?id=" + showtime.showtimeId).json(resolve);
-                                                                                    });
-                                                                                }))];
-                                                                            case 1:
-                                                                                _a.sent();
-                                                                                updateQuery({ action: 'clickSave' });
-                                                                                location.reload();
-                                                                                return [2 /*return*/];
+                                                    React.createElement(antd.Button, { disabled: !hall.showtimes.length, style: { marginLeft: 'auto' }, size: 'small', danger: true, onClick: function () { return __awaiter(_this, void 0, void 0, function () {
+                                                            var list, item, i_1, dom, opt, i_2;
+                                                            return __generator(this, function (_a) {
+                                                                switch (_a.label) {
+                                                                    case 0:
+                                                                        list = document.querySelectorAll('#schedule-detail > .edit-slicetitle > .info-border button');
+                                                                        for (item = void 0, i_1 = 0; (item = list[i_1]); i_1++) {
+                                                                            if (item.textContent.includes('批量删除'))
+                                                                                item.click();
                                                                         }
-                                                                    });
-                                                                }); }
+                                                                        return [4 /*yield*/, sleep(500)];
+                                                                    case 1:
+                                                                        _a.sent();
+                                                                        dom = document.querySelector('#batch-del select[name="hallId"]');
+                                                                        for (opt = void 0, i_2 = 0; (opt = dom.options[i_2]); i_2++) {
+                                                                            if (Number(opt.value) === hall.hallId) {
+                                                                                dom.selectedIndex = i_2;
+                                                                                break;
+                                                                            }
+                                                                        }
+                                                                        return [2 /*return*/];
+                                                                }
                                                             });
-                                                        } }, "\u6E05\u7A7A\u6392\u7247"),
+                                                        }); } }, "\u6E05\u7A7A\u6392\u7247"),
                                                     React.createElement(antd.Button, { disabled: Boolean(hall.showtimes.length), size: 'small', type: 'primary', style: { marginLeft: '12px' }, onClick: function () { return __awaiter(_this, void 0, void 0, function () {
                                                             return __generator(this, function (_a) {
                                                                 switch (_a.label) {
@@ -341,7 +311,7 @@ function init() {
                                                                 }
                                                             });
                                                         }); } }, "\u667A\u80FD\u6392\u7247"),
-                                                    React.createElement(antd.Modal, { title: '\u667A\u80FD\u6392\u7247', visible: visible, width: '100%', okButtonProps: { loading: loading, disabled: !selectedFilm }, onCancel: function () { return setVisible(false); }, onOk: function () { return __awaiter(_this, void 0, void 0, function () {
+                                                    React.createElement(antd.Modal, { title: '\u667A\u80FD\u6392\u7247', visible: visible, width: '70%', okButtonProps: { disabled: !selectedFilm }, onCancel: function () { return setVisible(false); }, bodyStyle: { padding: '12px 24px 19px' }, onOk: function () { return __awaiter(_this, void 0, void 0, function () {
                                                             var _a;
                                                             return __generator(this, function (_b) {
                                                                 switch (_b.label) {
@@ -358,7 +328,7 @@ function init() {
                                                                         return [3 /*break*/, 4];
                                                                     case 3:
                                                                         _a = _b.sent();
-                                                                        antd.message.warn('智能排片失败，请刷新后再尝试');
+                                                                        antd.message.warn('智能排片失败，请刷新页面再尝试');
                                                                         return [3 /*break*/, 4];
                                                                     case 4: return [2 /*return*/];
                                                                 }
@@ -370,28 +340,27 @@ function init() {
                                                                         display: 'flex',
                                                                         flexWrap: 'wrap',
                                                                         paddingRight: '10px',
-                                                                        paddingBottom: '10px'
+                                                                        marginLeft: '-5px'
                                                                     } }, a.map(function (item) { return (React.createElement(FilmCom_1, { key: item.filmNo, film: item, selected: item.filmNo === (selectedFilm === null || selectedFilm === void 0 ? void 0 : selectedFilm.filmNo), onClick: setSelectedFilm })); }))),
                                                             React.createElement(antd.Tabs.TabPane, { tab: "B\u7C7B\u5F71\u7247(" + b.length + ")", key: 'b' },
                                                                 React.createElement("div", { style: {
                                                                         display: 'flex',
                                                                         flexWrap: 'wrap',
                                                                         paddingRight: '10px',
-                                                                        paddingBottom: '10px'
+                                                                        marginLeft: '-5px'
                                                                     } }, b.map(function (item) { return (React.createElement(FilmCom_1, { key: item.filmNo, film: item, selected: item.filmNo === (selectedFilm === null || selectedFilm === void 0 ? void 0 : selectedFilm.filmNo), onClick: setSelectedFilm })); }))),
                                                             React.createElement(antd.Tabs.TabPane, { tab: "C\u7C7B\u5F71\u7247(" + c.length + ")", key: 'c' },
                                                                 React.createElement("div", { style: {
                                                                         display: 'flex',
                                                                         flexWrap: 'wrap',
                                                                         paddingRight: '10px',
-                                                                        paddingBottom: '10px'
+                                                                        marginLeft: '-5px'
                                                                     } }, c.map(function (item) { return (React.createElement(FilmCom_1, { key: item.filmNo, film: item, selected: item.filmNo === (selectedFilm === null || selectedFilm === void 0 ? void 0 : selectedFilm.filmNo), onClick: setSelectedFilm })); }))),
                                                             React.createElement(antd.Tabs.TabPane, { tab: "S\u7C7B\u5F71\u7247(" + s.length + ")", key: 's' },
                                                                 React.createElement("div", { style: {
                                                                         display: 'flex',
                                                                         flexWrap: 'wrap',
-                                                                        paddingRight: '10px',
-                                                                        paddingBottom: '10px'
+                                                                        paddingRight: '10px'
                                                                     } }, s.map(function (item) { return (React.createElement(FilmCom_1, { key: item.filmNo, film: item, selected: item.filmNo === (selectedFilm === null || selectedFilm === void 0 ? void 0 : selectedFilm.filmNo), onClick: setSelectedFilm })); })))))));
                                             };
                                             ReactDOM.render(React.createElement(App, { hall: hall, detail: detail }), dom_1);

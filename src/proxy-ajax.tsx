@@ -131,7 +131,6 @@ interface Save {
 let saveData: Save = null
 let detailUrl: string = null
 let detail: Detail = null
-const cacheBeforeDayDetail: { [key: string]: Detail } = {}
 
 /**
  * 格式化时间
@@ -323,19 +322,16 @@ function init() {
                         margin: '5px',
                         padding: '5px',
                         border: `1px solid ${selected ? 'red' : '#e1e1e1'}`,
-                        minWidth: '164px',
-                        minHeight: '82px',
+                        minWidth: '158px',
                         cursor: 'pointer',
-                        position: 'relative',
-                        zoom: 1,
                       }}
                       onClick={() => onClick(film)}
                     >
-                      <div>{film.filmName}</div>
-                      <div>
-                        片长:{film.duration} 分钟 [{film.price}]元
+                      <div style={{ fontWeight: 700 }}>{film.filmName}</div>
+                      <div style={{ color: 'gray', fontSize: '12px', paddingTop: '4px' }}>
+                        片长:{film.duration}分钟 [{film.price}]元
                       </div>
-                      <div>
+                      <div style={{ color: 'gray', fontSize: '12px' }}>
                         时段:[{startTime}-{endTime}]
                       </div>
                     </div>
@@ -349,46 +345,11 @@ function init() {
                   const App = function (props: { hall: Hall; detail: Detail }) {
                     const { hall, detail } = props
                     const [selectedFilm, setSelectedFilm] = React.useState<DetailFilm>(null)
-                    const [loading, setLoading] = React.useState(false)
                     const [visible, setVisible] = React.useState(() => {
                       const result = getQuery<number>('smartHallIndex', 'number') === i
                       if (result) updateQuery({ smartHallIndex: null })
                       return result
                     })
-                    const [beforeDay, setBeforeDay] = React.useState(7)
-                    const [beforeDayDetail, setBeforeDayDetail] = React.useState<Detail>(null)
-
-                    React.useEffect(() => {
-                      if (!visible) return
-
-                      let didCancel = false
-
-                      const cinemaId = getQuery('cinemaId', 'number', detailUrl.split('?')[1])
-                      const date = formatTime(
-                        new Date(getQuery<string>('date', 'string', detailUrl.split('?')[1])).getTime() -
-                          beforeDay * 86400 * 1000,
-                      ).split(' ')[0]
-
-                      if (cacheBeforeDayDetail[`${cinemaId}${date}`]) {
-                        setBeforeDayDetail(cacheBeforeDayDetail[`${cinemaId}${date}`])
-                      } else {
-                        setLoading(true)
-                        Mtime.Net.Ajax.get(`/schedule/detail?usage=view&cinemaId=${cinemaId}&date=${date}`).json(
-                          (data) => {
-                            if (didCancel) return
-                            setLoading(false)
-                            cacheBeforeDayDetail[`${cinemaId}${date}`] = data.value
-                            setBeforeDayDetail(data.value)
-                          },
-                        )
-                      }
-
-                      return () => (didCancel = true)
-                    }, [visible, beforeDay])
-
-                    const film = React.useMemo(() => beforeDayDetail?.halls[i]?.showtimes[0]?.films[0], [
-                      beforeDayDetail,
-                    ])
 
                     const a = detail.films.A.filter((film) =>
                       Boolean(film.supportHallFormats.find((format) => hall.formatCodes.includes(format))),
@@ -410,22 +371,21 @@ function init() {
                           style={{ marginLeft: 'auto' }}
                           size='small'
                           danger
-                          onClick={() => {
-                            antd.Modal.confirm({
-                              title: '是否清空排片',
-                              content: '清空排片后数据不可恢复，请确认',
-                              onOk: async () => {
-                                await Promise.all(
-                                  hall.showtimes.map((showtime) => {
-                                    return new Promise((resolve) => {
-                                      Mtime.Net.Ajax.get(`/showtime/delete?id=${showtime.showtimeId}`).json(resolve)
-                                    })
-                                  }),
-                                )
-                                updateQuery({ action: 'clickSave' })
-                                location.reload()
-                              },
-                            })
+                          onClick={async () => {
+                            const list = document.querySelectorAll(
+                              '#schedule-detail > .edit-slicetitle > .info-border button',
+                            )
+                            for (let item, i = 0; (item = list[i]); i++) {
+                              if (item.textContent.includes('批量删除')) item.click()
+                            }
+                            await sleep(500)
+                            const dom = document.querySelector('#batch-del select[name="hallId"]') as HTMLSelectElement
+                            for (let opt, i = 0; (opt = dom.options[i]); i++) {
+                              if (Number(opt.value) === hall.hallId) {
+                                dom.selectedIndex = i
+                                break
+                              }
+                            }
                           }}
                         >
                           清空排片
@@ -447,9 +407,10 @@ function init() {
                         <antd.Modal
                           title='智能排片'
                           visible={visible}
-                          width='100%'
-                          okButtonProps={{ loading, disabled: !selectedFilm }}
+                          width='70%'
+                          okButtonProps={{ disabled: !selectedFilm }}
                           onCancel={() => setVisible(false)}
+                          bodyStyle={{ padding: '12px 24px 19px' }}
                           onOk={async () => {
                             saveData.halls = detail.halls
                             saveData.halls[i] = smartSchedule(detail.halls[i], selectedFilm?.filmNo)
@@ -457,7 +418,7 @@ function init() {
                               await submitSave(saveData)
                               location.reload()
                             } catch {
-                              antd.message.warn('智能排片失败，请刷新后再尝试')
+                              antd.message.warn('智能排片失败，请刷新页面再尝试')
                             }
                           }}
                         >
@@ -468,7 +429,7 @@ function init() {
                                   display: 'flex',
                                   flexWrap: 'wrap',
                                   paddingRight: '10px',
-                                  paddingBottom: '10px',
+                                  marginLeft: '-5px',
                                 }}
                               >
                                 {a.map((item) => (
@@ -488,7 +449,7 @@ function init() {
                                   display: 'flex',
                                   flexWrap: 'wrap',
                                   paddingRight: '10px',
-                                  paddingBottom: '10px',
+                                  marginLeft: '-5px',
                                 }}
                               >
                                 {b.map((item) => (
@@ -508,7 +469,7 @@ function init() {
                                   display: 'flex',
                                   flexWrap: 'wrap',
                                   paddingRight: '10px',
-                                  paddingBottom: '10px',
+                                  marginLeft: '-5px',
                                 }}
                               >
                                 {c.map((item) => (
@@ -528,7 +489,6 @@ function init() {
                                   display: 'flex',
                                   flexWrap: 'wrap',
                                   paddingRight: '10px',
-                                  paddingBottom: '10px',
                                 }}
                               >
                                 {s.map((item) => (
