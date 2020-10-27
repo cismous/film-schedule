@@ -37,12 +37,6 @@
       ]
     }
   ],
-  "permissions": [
-    "http://howtime-prd-cmc.wandafilm.com/",
-    "http://order-admin-prd-tc.wandafilm.com/",
-    "webRequest",
-    "webRequestBlocking"
-  ],
   "minimum_chrome_version": "80",
   "manifest_version": 2
 }
