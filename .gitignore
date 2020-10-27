@@ -11,4 +11,4 @@ package-lock.json
 # Editor directories and files
 .idea
 *.awcache
-
+/temp
