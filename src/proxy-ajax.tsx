@@ -172,21 +172,20 @@ function smartMinutes(minutes: number, increase = 10) {
  * 智能计算排片时间
  * @param list 已生成的时间列表
  * @param duration 电影放映时间
- * @param startTime 当前场次开始时间
+ * @param initStartTime 当前场次开始时间
  */
-function generateShowTime(list: TimeRange[], duration: number): TimeRange[] {
-  let startTime = '2020-10-31 08:05'
+function generateShowTime(list: TimeRange[], duration: number, initStartTime = '2020-10-31 08:05'): TimeRange[] {
   if (list.length) {
     const temp = new Date(list.slice(-1)[0].endTime)
     if (temp.getHours() >= 23 || temp.getHours() <= 1) return list
-    startTime = formatTime(temp.getTime() + smartMinutes(temp.getMinutes()) * 60 * 1000)
+    initStartTime = formatTime(temp.getTime() + smartMinutes(temp.getMinutes()) * 60 * 1000)
   }
 
-  const endTime = getEndTime(startTime, duration)
-  return generateShowTime([...list, { startTime, endTime }], duration)
+  const endTime = getEndTime(initStartTime, duration)
+  return generateShowTime([...list, { startTime: initStartTime, endTime }], duration)
 }
 
-function smartSchedule(hall: Hall, filmNo?: number) {
+function smartSchedule(hall: Hall, filmNo?: number, initStartTime?: string) {
   hall = JSON.parse(JSON.stringify(hall))
   let detailFilm: DetailFilm = null
   if (filmNo) {
@@ -201,7 +200,7 @@ function smartSchedule(hall: Hall, filmNo?: number) {
   }
   const { duration } = detailFilm
   const lastSetting = detailFilm.settings.slice(-1)[0]
-  const showTimeLit = generateShowTime([], duration)
+  const showTimeLit = generateShowTime([], duration, initStartTime)
   hall.showtimes = showTimeLit.map((item) => ({
     status: 'new',
     hallId: hall.hallId,
@@ -422,6 +421,10 @@ function init() {
                             }
                           }}
                         >
+                          <div>
+                            <antd.TimePicker defaultValue={moment('08:05', 'HH:mm')} format={'HH:mm'} />
+                          </div>
+
                           <antd.Tabs defaultActiveKey='1'>
                             <antd.Tabs.TabPane tab={`A类影片(${a.length})`} key='a'>
                               <div
