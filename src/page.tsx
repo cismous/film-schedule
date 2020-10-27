@@ -42,7 +42,7 @@ async function edit(dayOffset = 0) {
 }
 
 function APP() {
-  const [editDay, setEditDay] = React.useState(undefined)
+  const [editDay, setEditDay] = React.useState(getQuery<number>('dayOffset', 'number') || 1)
   const [cinemaId, setCinemaId] = React.useState(() => {
     const search = new URLSearchParams(location.search.slice(1))
     return search.get('cinemaId')
@@ -69,7 +69,7 @@ function APP() {
               dom.selectedIndex = i
               document.getElementById('select2-cinemaId-container').textContent = opt.textContent
               document.getElementById('search-schedule').click()
-              const dayOffset = getQuery<number>('dayOffset', 'number')
+              const dayOffset = getQuery<number>('dayOffset', 'number') || 1
               await edit(dayOffset)
               setEditDay(dayOffset)
               autoMax()
@@ -125,14 +125,32 @@ function APP() {
           {
             value: 1,
             weekDay: i18nDay[(curWeekDay + 1) % 7],
-            disabled: (curMonthDay + 1) % curMonthLastDay <= curMonthDay,
+            disabled: curMonthDay + 1 > curMonthLastDay,
             label: '明天',
           },
           {
             value: 2,
             weekDay: i18nDay[(curWeekDay + 2) % 7],
-            disabled: (curMonthDay + 2) % curMonthLastDay <= curMonthDay,
+            disabled: curMonthDay + 2 > curMonthLastDay,
             label: '后天',
+          },
+          {
+            value: 3,
+            weekDay: i18nDay[(curWeekDay + 3) % 7],
+            disabled: curMonthDay + 3 > curMonthLastDay,
+            label: '大后天',
+          },
+          {
+            value: 4,
+            weekDay: i18nDay[(curWeekDay + 4) % 7],
+            disabled: curMonthDay + 4 > curMonthLastDay,
+            label: '再往后',
+          },
+          {
+            value: 5,
+            weekDay: i18nDay[(curWeekDay + 5) % 7],
+            disabled: curMonthDay + 5 > curMonthLastDay,
+            label: '再再往后',
           },
         ]
           .filter((item) => !item.disabled)

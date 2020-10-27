@@ -13,7 +13,7 @@ function FileSchedule() {
     return (React.createElement("div", { className: 'app' },
         React.createElement("div", { className: 'list' },
             React.createElement("div", { className: 'label' }, "\u5E38\u7528\u5F71\u9662\u5217\u8868: "),
-            list.map(function (item) { return (React.createElement("a", { key: item.cinemaId, href: "http://showtime-prd-cmc.wandafilm.com/schedule/list?cinemaId=" + item.cinemaId, target: '_blank', rel: 'noreferrer' }, item.label)); })),
+            list.map(function (item) { return (React.createElement("a", { key: item.cinemaId, href: "http://showtime-prd-cmc.wandafilm.com/schedule/list?cinemaId=" + item.cinemaId + "&dayOffset=1", target: '_blank', rel: 'noreferrer' }, item.label)); })),
         React.createElement("div", { className: 'list' },
             React.createElement("div", { className: 'label' }, "\u5E38\u7528\u94FE\u63A5: "),
             React.createElement("a", { href: "http://order-admin-prd-tc.wandafilm.com/order/list?startTime=" + startTime + "&endTime=" + endTime, target: '_blank', rel: 'noreferrer' }, "\u9000\u7968\u7F51\u7AD9"))));

@@ -105,7 +105,7 @@ function edit(dayOffset) {
 }
 function APP() {
     var _this = this;
-    var _a = React.useState(undefined), editDay = _a[0], setEditDay = _a[1];
+    var _a = React.useState(getQuery('dayOffset', 'number') || 1), editDay = _a[0], setEditDay = _a[1];
     var _b = React.useState(function () {
         var search = new URLSearchParams(location.search.slice(1));
         return search.get('cinemaId');
@@ -146,7 +146,7 @@ function APP() {
                                                         dom.selectedIndex = i;
                                                         document.getElementById('select2-cinemaId-container').textContent = opt.textContent;
                                                         document.getElementById('search-schedule').click();
-                                                        dayOffset = getQuery('dayOffset', 'number');
+                                                        dayOffset = getQuery('dayOffset', 'number') || 1;
                                                         return [4 /*yield*/, edit(dayOffset)];
                                                     case 2:
                                                         _a.sent();
@@ -217,14 +217,32 @@ function APP() {
             {
                 value: 1,
                 weekDay: i18nDay[(curWeekDay + 1) % 7],
-                disabled: (curMonthDay + 1) % curMonthLastDay <= curMonthDay,
+                disabled: curMonthDay + 1 > curMonthLastDay,
                 label: '明天'
             },
             {
                 value: 2,
                 weekDay: i18nDay[(curWeekDay + 2) % 7],
-                disabled: (curMonthDay + 2) % curMonthLastDay <= curMonthDay,
+                disabled: curMonthDay + 2 > curMonthLastDay,
                 label: '后天'
+            },
+            {
+                value: 3,
+                weekDay: i18nDay[(curWeekDay + 3) % 7],
+                disabled: curMonthDay + 3 > curMonthLastDay,
+                label: '大后天'
+            },
+            {
+                value: 4,
+                weekDay: i18nDay[(curWeekDay + 4) % 7],
+                disabled: curMonthDay + 4 > curMonthLastDay,
+                label: '再往后'
+            },
+            {
+                value: 5,
+                weekDay: i18nDay[(curWeekDay + 5) % 7],
+                disabled: curMonthDay + 5 > curMonthLastDay,
+                label: '再再往后'
             },
         ]
             .filter(function (item) { return !item.disabled; })

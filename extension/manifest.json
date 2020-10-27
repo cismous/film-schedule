@@ -38,18 +38,10 @@
     }
   ],
   "permissions": [
-    "tabs",
-    "cookies",
-    "notifications",
-    "\u003Call_urls\u003E",
-    "unlimitedStorage",
-    "storage",
-    "http://*/",
-    "https://*/",
+    "http://howtime-prd-cmc.wandafilm.com/",
+    "http://order-admin-prd-tc.wandafilm.com/",
     "webRequest",
-    "webRequestBlocking",
-    "declarativeContent",
-    "webNavigation"
+    "webRequestBlocking"
   ],
   "minimum_chrome_version": "80",
   "manifest_version": 2
