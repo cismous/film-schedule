@@ -174,7 +174,7 @@ function smartMinutes(minutes: number, increase = 10) {
  * @param duration 电影放映时间
  * @param initStartTime 当前场次开始时间
  */
-function generateShowTime(list: TimeRange[], duration: number, initStartTime = '2020-10-31 08:05'): TimeRange[] {
+function generateShowTime(list: TimeRange[], duration: number, initStartTime: string): TimeRange[] {
   if (list.length) {
     const temp = new Date(list.slice(-1)[0].endTime)
     if (temp.getHours() >= 23 || temp.getHours() <= 1) return list
@@ -182,7 +182,7 @@ function generateShowTime(list: TimeRange[], duration: number, initStartTime = '
   }
 
   const endTime = getEndTime(initStartTime, duration)
-  return generateShowTime([...list, { startTime: initStartTime, endTime }], duration)
+  return generateShowTime([...list, { startTime: initStartTime, endTime }], duration, initStartTime)
 }
 
 function smartSchedule(hall: Hall, filmNo?: number, initStartTime?: string) {
@@ -245,22 +245,13 @@ function submitSave(saveData: Save) {
 
 async function clickSave() {
   const list = document.querySelectorAll('.slice-timing.info-border button')
-  for (let item, i = 0; (item = list[i]); i++) {
-    if (item.textContent.includes('保存')) item.click()
+  for (let i = 0; i < list.length; i++) {
+    const item = list[i]
+    if (item.textContent.includes('保存')) (item as HTMLDivElement).click()
   }
   await sleep(100)
   await spinnerLoaded()
   await sleep(20)
-}
-
-function smartSave() {
-  saveData.halls = []
-
-  for (let i = 0; i < detail.halls.length; i++) {
-    saveData.halls[i] = smartSchedule(detail.halls[i])
-  }
-
-  submitSave(saveData)
 }
 
 const mountDom = []
@@ -343,7 +334,11 @@ function init() {
 
                   const App = function (props: { hall: Hall; detail: Detail }) {
                     const { hall, detail } = props
+                    // 当面选择的排片电影
                     const [selectedFilm, setSelectedFilm] = React.useState<DetailFilm>(null)
+                    // 排片时间
+                    const [startTime, setStartTime] = React.useState(moment('08:05', 'HH:mm'))
+                    const [loading, setLoading] = React.useState(false)
                     const [visible, setVisible] = React.useState(() => {
                       const result = getQuery<number>('smartHallIndex', 'number') === i
                       if (result) updateQuery({ smartHallIndex: null })
@@ -371,18 +366,31 @@ function init() {
                           size='small'
                           danger
                           onClick={async () => {
-                            const list = document.querySelectorAll(
-                              '#schedule-detail > .edit-slicetitle > .info-border button',
-                            )
-                            for (let item, i = 0; (item = list[i]); i++) {
-                              if (item.textContent.includes('批量删除')) item.click()
+                            const selector = '#schedule-detail .info-border button'
+                            const list = document.querySelectorAll<HTMLDivElement>(selector)
+                            for (let i = 0; i < list.length; i++) {
+                              const item = list[i]
+                              if (item.textContent.includes('批量删除')) {
+                                item.click()
+                                break
+                              }
                             }
                             await sleep(500)
-                            const dom = document.querySelector('#batch-del select[name="hallId"]') as HTMLSelectElement
-                            for (let opt, i = 0; (opt = dom.options[i]); i++) {
+                            const dom = (await queryDomAsync('#batch-del select[name="hallId"]')) as HTMLSelectElement
+                            for (let i = 0; i < dom.options.length; i++) {
+                              const opt = dom.options[i]
                               if (Number(opt.value) === hall.hallId) {
                                 dom.selectedIndex = i
                                 break
+                              }
+                            }
+                            const bntList = document.querySelectorAll('#dialog-1603879900956 .modal-footer button')
+                            for (let i = 0; i < bntList.length; i++) {
+                              const item = bntList[i]
+                              if (item.textContent === '确定') {
+                                item.addEventListener('click', async () => {
+                                  await clickSave()
+                                })
                               }
                             }
                           }}
@@ -406,23 +414,33 @@ function init() {
                         <antd.Modal
                           title='智能排片'
                           visible={visible}
-                          width='70%'
-                          okButtonProps={{ disabled: !selectedFilm }}
+                          width='68%'
+                          okButtonProps={{ loading, disabled: !selectedFilm }}
+                          cancelButtonProps={{ disabled: loading }}
                           onCancel={() => setVisible(false)}
                           bodyStyle={{ padding: '12px 24px 19px' }}
                           onOk={async () => {
+                            setLoading(true)
+                            const smartDate = getQuery<string>('smartDate', 'string')
+                            const initStartTime = `${smartDate} ${startTime.format('HH:mm')}`
                             saveData.halls = detail.halls
-                            saveData.halls[i] = smartSchedule(detail.halls[i], selectedFilm?.filmNo)
+                            saveData.halls[i] = smartSchedule(detail.halls[i], selectedFilm?.filmNo, initStartTime)
                             try {
                               await submitSave(saveData)
                               location.reload()
                             } catch {
                               antd.message.warn('智能排片失败，请刷新页面再尝试')
                             }
+                            setLoading(false)
                           }}
                         >
-                          <div>
-                            <antd.TimePicker defaultValue={moment('08:05', 'HH:mm')} format={'HH:mm'} />
+                          <div style={{ display: 'flex', alignItems: 'center' }}>
+                            <div style={{ paddingRight: '8px' }}>排片开始时间:</div>
+                            <antd.TimePicker
+                              value={startTime}
+                              format={'HH:mm'}
+                              onChange={(date) => setStartTime(date)}
+                            />
                           </div>
 
                           <antd.Tabs defaultActiveKey='1'>

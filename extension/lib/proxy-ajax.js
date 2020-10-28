@@ -93,20 +93,19 @@ function smartMinutes(minutes, increase) {
  * 智能计算排片时间
  * @param list 已生成的时间列表
  * @param duration 电影放映时间
- * @param startTime 当前场次开始时间
+ * @param initStartTime 当前场次开始时间
  */
-function generateShowTime(list, duration) {
-    var startTime = '2020-10-31 08:05';
+function generateShowTime(list, duration, initStartTime) {
     if (list.length) {
         var temp = new Date(list.slice(-1)[0].endTime);
         if (temp.getHours() >= 23 || temp.getHours() <= 1)
             return list;
-        startTime = formatTime(temp.getTime() + smartMinutes(temp.getMinutes()) * 60 * 1000);
+        initStartTime = formatTime(temp.getTime() + smartMinutes(temp.getMinutes()) * 60 * 1000);
     }
-    var endTime = getEndTime(startTime, duration);
-    return generateShowTime(__spreadArrays(list, [{ startTime: startTime, endTime: endTime }]), duration);
+    var endTime = getEndTime(initStartTime, duration);
+    return generateShowTime(__spreadArrays(list, [{ startTime: initStartTime, endTime: endTime }]), duration, initStartTime);
 }
-function smartSchedule(hall, filmNo) {
+function smartSchedule(hall, filmNo, initStartTime) {
     hall = JSON.parse(JSON.stringify(hall));
     var detailFilm = null;
     if (filmNo) {
@@ -124,7 +123,7 @@ function smartSchedule(hall, filmNo) {
     }
     var duration = detailFilm.duration;
     var lastSetting = detailFilm.settings.slice(-1)[0];
-    var showTimeLit = generateShowTime([], duration);
+    var showTimeLit = generateShowTime([], duration, initStartTime);
     hall.showtimes = showTimeLit.map(function (item) { return (__assign(__assign({ status: 'new', hallId: hall.hallId, hallNo: hall.hallNo, hallName: hall.hallNo, filmName: detailFilm.filmName, duration: duration, adWidth: 0 }, item), { editable: true, through: false, throughable: false, films: [
             __assign(__assign(__assign({}, detailFilm), { selected: false, standardPrice: lastSetting.price, advertTime: lastSetting.advertTime }), item),
         ] })); });
@@ -150,12 +149,13 @@ function submitSave(saveData) {
 }
 function clickSave() {
     return __awaiter(this, void 0, void 0, function () {
-        var list, item, i;
+        var list, i, item;
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
                     list = document.querySelectorAll('.slice-timing.info-border button');
-                    for (item = void 0, i = 0; (item = list[i]); i++) {
+                    for (i = 0; i < list.length; i++) {
+                        item = list[i];
                         if (item.textContent.includes('保存'))
                             item.click();
                     }
@@ -172,13 +172,6 @@ function clickSave() {
             }
         });
     });
-}
-function smartSave() {
-    saveData.halls = [];
-    for (var i = 0; i < detail.halls.length; i++) {
-        saveData.halls[i] = smartSchedule(detail.halls[i]);
-    }
-    submitSave(saveData);
 }
 var mountDom = [];
 function init() {
@@ -255,13 +248,17 @@ function init() {
                                             var App = function (props) {
                                                 var _this = this;
                                                 var hall = props.hall, detail = props.detail;
+                                                // 当面选择的排片电影
                                                 var _a = React.useState(null), selectedFilm = _a[0], setSelectedFilm = _a[1];
-                                                var _b = React.useState(function () {
+                                                // 排片时间
+                                                var _b = React.useState(moment('08:05', 'HH:mm')), startTime = _b[0], setStartTime = _b[1];
+                                                var _c = React.useState(false), loading = _c[0], setLoading = _c[1];
+                                                var _d = React.useState(function () {
                                                     var result = getQuery('smartHallIndex', 'number') === i;
                                                     if (result)
                                                         updateQuery({ smartHallIndex: null });
                                                     return result;
-                                                }), visible = _b[0], setVisible = _b[1];
+                                                }), visible = _d[0], setVisible = _d[1];
                                                 var a = detail.films.A.filter(function (film) {
                                                     return Boolean(film.supportHallFormats.find(function (format) { return hall.formatCodes.includes(format); }));
                                                 });
@@ -276,23 +273,47 @@ function init() {
                                                 });
                                                 return (React.createElement("div", { style: { display: 'flex', marginTop: '8px' } },
                                                     React.createElement(antd.Button, { disabled: !hall.showtimes.length, style: { marginLeft: 'auto' }, size: 'small', danger: true, onClick: function () { return __awaiter(_this, void 0, void 0, function () {
-                                                            var list, item, i_1, dom, opt, i_2;
+                                                            var selector, list, i_1, item, dom, i_2, opt, bntList, i_3, item;
+                                                            var _this = this;
                                                             return __generator(this, function (_a) {
                                                                 switch (_a.label) {
                                                                     case 0:
-                                                                        list = document.querySelectorAll('#schedule-detail > .edit-slicetitle > .info-border button');
-                                                                        for (item = void 0, i_1 = 0; (item = list[i_1]); i_1++) {
-                                                                            if (item.textContent.includes('批量删除'))
+                                                                        selector = '#schedule-detail .info-border button';
+                                                                        list = document.querySelectorAll(selector);
+                                                                        for (i_1 = 0; i_1 < list.length; i_1++) {
+                                                                            item = list[i_1];
+                                                                            if (item.textContent.includes('批量删除')) {
                                                                                 item.click();
+                                                                                break;
+                                                                            }
                                                                         }
                                                                         return [4 /*yield*/, sleep(500)];
                                                                     case 1:
                                                                         _a.sent();
-                                                                        dom = document.querySelector('#batch-del select[name="hallId"]');
-                                                                        for (opt = void 0, i_2 = 0; (opt = dom.options[i_2]); i_2++) {
+                                                                        return [4 /*yield*/, queryDomAsync('#batch-del select[name="hallId"]')];
+                                                                    case 2:
+                                                                        dom = (_a.sent());
+                                                                        for (i_2 = 0; i_2 < dom.options.length; i_2++) {
+                                                                            opt = dom.options[i_2];
                                                                             if (Number(opt.value) === hall.hallId) {
                                                                                 dom.selectedIndex = i_2;
                                                                                 break;
+                                                                            }
+                                                                        }
+                                                                        bntList = document.querySelectorAll('#dialog-1603879900956 .modal-footer button');
+                                                                        for (i_3 = 0; i_3 < bntList.length; i_3++) {
+                                                                            item = bntList[i_3];
+                                                                            if (item.textContent === '确定') {
+                                                                                item.addEventListener('click', function () { return __awaiter(_this, void 0, void 0, function () {
+                                                                                    return __generator(this, function (_a) {
+                                                                                        switch (_a.label) {
+                                                                                            case 0: return [4 /*yield*/, clickSave()];
+                                                                                            case 1:
+                                                                                                _a.sent();
+                                                                                                return [2 /*return*/];
+                                                                                        }
+                                                                                    });
+                                                                                }); });
                                                                             }
                                                                         }
                                                                         return [2 /*return*/];
@@ -311,13 +332,16 @@ function init() {
                                                                 }
                                                             });
                                                         }); } }, "\u667A\u80FD\u6392\u7247"),
-                                                    React.createElement(antd.Modal, { title: '\u667A\u80FD\u6392\u7247', visible: visible, width: '70%', okButtonProps: { disabled: !selectedFilm }, onCancel: function () { return setVisible(false); }, bodyStyle: { padding: '12px 24px 19px' }, onOk: function () { return __awaiter(_this, void 0, void 0, function () {
-                                                            var _a;
+                                                    React.createElement(antd.Modal, { title: '\u667A\u80FD\u6392\u7247', visible: visible, width: '68%', okButtonProps: { loading: loading, disabled: !selectedFilm }, cancelButtonProps: { disabled: loading }, onCancel: function () { return setVisible(false); }, bodyStyle: { padding: '12px 24px 19px' }, onOk: function () { return __awaiter(_this, void 0, void 0, function () {
+                                                            var smartDate, initStartTime, _a;
                                                             return __generator(this, function (_b) {
                                                                 switch (_b.label) {
                                                                     case 0:
+                                                                        setLoading(true);
+                                                                        smartDate = getQuery('smartDate', 'string');
+                                                                        initStartTime = smartDate + " " + startTime.format('HH:mm');
                                                                         saveData.halls = detail.halls;
-                                                                        saveData.halls[i] = smartSchedule(detail.halls[i], selectedFilm === null || selectedFilm === void 0 ? void 0 : selectedFilm.filmNo);
+                                                                        saveData.halls[i] = smartSchedule(detail.halls[i], selectedFilm === null || selectedFilm === void 0 ? void 0 : selectedFilm.filmNo, initStartTime);
                                                                         _b.label = 1;
                                                                     case 1:
                                                                         _b.trys.push([1, 3, , 4]);
@@ -330,10 +354,15 @@ function init() {
                                                                         _a = _b.sent();
                                                                         antd.message.warn('智能排片失败，请刷新页面再尝试');
                                                                         return [3 /*break*/, 4];
-                                                                    case 4: return [2 /*return*/];
+                                                                    case 4:
+                                                                        setLoading(false);
+                                                                        return [2 /*return*/];
                                                                 }
                                                             });
                                                         }); } },
+                                                        React.createElement("div", { style: { display: 'flex', alignItems: 'center' } },
+                                                            React.createElement("div", { style: { paddingRight: '8px' } }, "\u6392\u7247\u5F00\u59CB\u65F6\u95F4:"),
+                                                            React.createElement(antd.TimePicker, { value: startTime, format: 'HH:mm', onChange: function (date) { return setStartTime(date); } })),
                                                         React.createElement(antd.Tabs, { defaultActiveKey: '1' },
                                                             React.createElement(antd.Tabs.TabPane, { tab: "A\u7C7B\u5F71\u7247(" + a.length + ")", key: 'a' },
                                                                 React.createElement("div", { style: {

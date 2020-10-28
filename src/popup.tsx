@@ -21,7 +21,7 @@ function FileSchedule() {
         {list.map((item) => (
           <a
             key={item.cinemaId}
-            href={`http://showtime-prd-cmc.wandafilm.com/schedule/list?cinemaId=${item.cinemaId}&dayOffset=1`}
+            href={`http://showtime-prd-cmc.wandafilm.com/schedule/list?cinemaId=${item.cinemaId}`}
             target='_blank'
             rel='noreferrer'
           >

@@ -38,27 +38,27 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 var dom = document.createElement('div');
 dom.classList.add('clearfix');
 var i18nDay = {
-    0: '周日',
     1: '周一',
     2: '周二',
     3: '周三',
     4: '周四',
     5: '周五',
-    6: '周六'
+    6: '周六',
+    7: '周日'
 };
 function autoMax() {
     return __awaiter(this, void 0, void 0, function () {
-        var list, item, i;
+        var list, i, item;
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0: return [4 /*yield*/, spinnerLoaded()];
                 case 1:
                     _a.sent();
-                    return [4 /*yield*/, sleep(2000)];
+                    return [4 /*yield*/, queryDomsAsync('.slice-timing.info-border button')];
                 case 2:
-                    _a.sent();
-                    list = document.querySelectorAll('.slice-timing.info-border button');
-                    for (item = void 0, i = 0; (item = list[i]); i++) {
+                    list = _a.sent();
+                    for (i = 0; i < list.length; i++) {
+                        item = list[i];
                         if (item.textContent.includes('最大化'))
                             item.click();
                     }
@@ -67,193 +67,116 @@ function autoMax() {
         });
     });
 }
-/**
- * 编辑某天的影片
- * @param dayOffset 距离当天时间天数的偏移值
- */
-function edit(dayOffset) {
-    var _a;
-    if (dayOffset === void 0) { dayOffset = 0; }
-    return __awaiter(this, void 0, void 0, function () {
-        var calendarList, index, btn;
-        return __generator(this, function (_b) {
-            switch (_b.label) {
-                case 0: return [4 /*yield*/, sleep(200)];
-                case 1:
-                    _b.sent();
-                    return [4 /*yield*/, spinnerLoaded()];
-                case 2:
-                    _b.sent();
-                    calendarList = Array.from(document.querySelectorAll('#calendar .calendar-date li'));
-                    index = calendarList.findIndex(function (item) {
-                        var _a;
-                        var curMonthDay = new Date().getDate();
-                        return ((_a = item.querySelector('.date')) === null || _a === void 0 ? void 0 : _a.textContent) === String(curMonthDay);
-                    });
-                    btn = (_a = calendarList[index + dayOffset]) === null || _a === void 0 ? void 0 : _a.querySelectorAll('button');
-                    updateQuery({ dayOffset: dayOffset });
-                    if (!((btn === null || btn === void 0 ? void 0 : btn.length) > 1)) return [3 /*break*/, 4];
-                    btn[1].click();
-                    return [4 /*yield*/, autoMax()];
-                case 3:
-                    _b.sent();
-                    _b.label = 4;
-                case 4: return [2 /*return*/];
-            }
-        });
-    });
-}
 function APP() {
     var _this = this;
-    var _a = React.useState(getQuery('dayOffset', 'number') || 1), editDay = _a[0], setEditDay = _a[1];
-    var _b = React.useState(function () {
-        var search = new URLSearchParams(location.search.slice(1));
-        return search.get('cinemaId');
-    }), cinemaId = _b[0], setCinemaId = _b[1];
-    var curWeekDay = new Date().getDay();
-    var curMonthDay = new Date().getDate();
-    var curMonthLastDay = new Date(new Date().getFullYear(), 1, 0).getDate();
-    function updateCinema(cinemaId) {
-        return __awaiter(this, void 0, void 0, function () {
-            var _this = this;
-            return __generator(this, function (_a) {
-                return [2 /*return*/, new Promise(function (resolve) { return __awaiter(_this, void 0, void 0, function () {
-                        var times, execute;
-                        var _this = this;
-                        return __generator(this, function (_a) {
-                            switch (_a.label) {
-                                case 0: return [4 /*yield*/, spinnerLoaded()];
-                                case 1:
-                                    _a.sent();
-                                    times = 0;
-                                    execute = function () {
-                                        setTimeout(function () { return __awaiter(_this, void 0, void 0, function () {
-                                            var dom, opt, i, dayOffset;
-                                            return __generator(this, function (_a) {
-                                                switch (_a.label) {
-                                                    case 0:
-                                                        times++;
-                                                        if (times > 100)
-                                                            return [2 /*return*/, void resolve()];
-                                                        dom = document.getElementById('cinemaId');
-                                                        if (dom.options.length === 0)
-                                                            return [2 /*return*/, void execute()];
-                                                        opt = void 0, i = 0;
-                                                        _a.label = 1;
-                                                    case 1:
-                                                        if (!(opt = dom.options[i])) return [3 /*break*/, 4];
-                                                        if (!(opt.value === cinemaId)) return [3 /*break*/, 3];
-                                                        dom.selectedIndex = i;
-                                                        document.getElementById('select2-cinemaId-container').textContent = opt.textContent;
-                                                        document.getElementById('search-schedule').click();
-                                                        dayOffset = getQuery('dayOffset', 'number') || 1;
-                                                        return [4 /*yield*/, edit(dayOffset)];
-                                                    case 2:
-                                                        _a.sent();
-                                                        setEditDay(dayOffset);
-                                                        autoMax();
-                                                        resolve();
-                                                        return [3 /*break*/, 4];
-                                                    case 3:
-                                                        i++;
-                                                        return [3 /*break*/, 1];
-                                                    case 4: return [2 /*return*/];
-                                                }
-                                            });
-                                        }); }, 50);
-                                    };
-                                    execute();
-                                    return [2 /*return*/];
-                            }
-                        });
-                    }); })];
-            });
-        });
-    }
-    React.useEffect(function () {
-        var main = function () { return __awaiter(_this, void 0, void 0, function () {
-            var search, cinemaId;
-            return __generator(this, function (_a) {
-                switch (_a.label) {
-                    case 0:
-                        search = new URLSearchParams(location.search.slice(1));
-                        cinemaId = search.get('cinemaId');
-                        return [4 /*yield*/, sleep(1000)];
-                    case 1:
-                        _a.sent();
-                        if (!cinemaId) return [3 /*break*/, 3];
-                        return [4 /*yield*/, updateCinema(cinemaId)];
-                    case 2:
-                        _a.sent();
-                        _a.label = 3;
-                    case 3: return [2 /*return*/];
-                }
-            });
-        }); };
-        main();
-    }, []);
+    var _a = React.useState(getQuery('smartDate')), smartDate = _a[0], setSmartDat = _a[1];
+    var _b = React.useState(getQuery('cinemaId')), cinemaId = _b[0], setCinemaId = _b[1];
     return (React.createElement(React.Fragment, null,
-        React.createElement("div", { style: { paddingTop: '10px' } },
-            React.createElement(antd.Radio.Group, { value: cinemaId, size: 'small', onChange: function (event) {
-                    updateCinema(event.target.value);
-                    setCinemaId(event.target.value);
-                } },
+        React.createElement("div", { style: { paddingTop: '10px', display: 'flex', alignItems: 'center' } },
+            React.createElement("div", { style: { paddingRight: '4px' } }, "\u5F71\u57CE\uFF1A"),
+            React.createElement(antd.Radio.Group, { value: cinemaId, size: 'small', onChange: function (event) { return __awaiter(_this, void 0, void 0, function () {
+                    var cinemaId;
+                    return __generator(this, function (_a) {
+                        switch (_a.label) {
+                            case 0:
+                                cinemaId = event.target.value;
+                                setCinemaId(cinemaId);
+                                updateQuery({ cinemaId: cinemaId });
+                                return [4 /*yield*/, selectCinema(cinemaId)];
+                            case 1:
+                                _a.sent();
+                                return [4 /*yield*/, editSomeDay()];
+                            case 2:
+                                _a.sent();
+                                return [2 /*return*/];
+                        }
+                    });
+                }); } },
                 React.createElement(antd.Radio.Button, { value: '375' }, "\u7ECF\u5F00"),
                 React.createElement(antd.Radio.Button, { value: '010' }, "\u7FA4\u661F\u57CE"),
                 React.createElement(antd.Radio.Button, { value: '373' }, "\u6625\u6811\u91CC"),
                 React.createElement(antd.Radio.Button, { value: '321' }, "\u6C5F\u6C49\u8DEF\u60A6\u82B8"))),
-        React.createElement(antd.Radio.Group, { value: editDay, size: 'small', onChange: function (event) { return __awaiter(_this, void 0, void 0, function () {
-                return __generator(this, function (_a) {
-                    switch (_a.label) {
-                        case 0: return [4 /*yield*/, edit(event.target.value)];
-                        case 1:
-                            _a.sent();
-                            setEditDay(event.target.value);
-                            return [2 /*return*/];
-                    }
-                });
-            }); }, style: { paddingTop: '10px' } }, [
-            { value: 0, weekDay: i18nDay[curWeekDay], disabled: false, label: '今天' },
-            {
-                value: 1,
-                weekDay: i18nDay[(curWeekDay + 1) % 7],
-                disabled: curMonthDay + 1 > curMonthLastDay,
-                label: '明天'
-            },
-            {
-                value: 2,
-                weekDay: i18nDay[(curWeekDay + 2) % 7],
-                disabled: curMonthDay + 2 > curMonthLastDay,
-                label: '后天'
-            },
-            {
-                value: 3,
-                weekDay: i18nDay[(curWeekDay + 3) % 7],
-                disabled: curMonthDay + 3 > curMonthLastDay,
-                label: '大后天'
-            },
-            {
-                value: 4,
-                weekDay: i18nDay[(curWeekDay + 4) % 7],
-                disabled: curMonthDay + 4 > curMonthLastDay,
-                label: '再往后'
-            },
-            {
-                value: 5,
-                weekDay: i18nDay[(curWeekDay + 5) % 7],
-                disabled: curMonthDay + 5 > curMonthLastDay,
-                label: '再再往后'
-            },
-        ]
-            .filter(function (item) { return !item.disabled; })
-            .map(function (item) { return (React.createElement(antd.Radio.Button, { key: item.value, value: item.value },
-            "\u7F16\u8F91(",
-            curMonthDay + item.value,
-            "\u53F7-",
-            item.weekDay,
-            "-",
-            item.label,
-            ")")); }))));
+        React.createElement("div", { style: { paddingTop: '10px', display: 'flex', alignItems: 'center' } },
+            React.createElement("div", { style: { paddingRight: '4px' } }, "\u65E5\u671F\uFF1A"),
+            React.createElement(antd.Radio.Group, { value: smartDate, size: 'small', onChange: function (event) { return __awaiter(_this, void 0, void 0, function () {
+                    var smartDate;
+                    return __generator(this, function (_a) {
+                        switch (_a.label) {
+                            case 0:
+                                smartDate = event.target.value;
+                                return [4 /*yield*/, editSomeDay(smartDate)];
+                            case 1:
+                                _a.sent();
+                                setSmartDat(smartDate);
+                                return [2 /*return*/];
+                        }
+                    });
+                }); } }, [
+                { value: moment(), label: '-今天' },
+                { value: moment().add(1, 'days'), label: '-明天' },
+                { value: moment().add(2, 'days') },
+                { value: moment().add(3, 'days') },
+                { value: moment().add(4, 'days') },
+                { value: moment().add(5, 'days') },
+                { value: moment().add(6, 'days') },
+                { value: moment().add(7, 'days') },
+            ].map(function (item, i) {
+                var _a;
+                return (React.createElement(antd.Radio.Button, { key: i, value: item.value.format('YYYY-MM-DD') }, item.value.format('M月D号') + " " + i18nDay[item.value.format('E')] + ((_a = item.label) !== null && _a !== void 0 ? _a : '')));
+            })))));
 }
-ReactDOM.render(React.createElement(APP, null), dom);
-document.querySelector('#schedule-form .p10').appendChild(dom);
+var times = 0;
+function pageInit() {
+    return __awaiter(this, void 0, void 0, function () {
+        var smartDate;
+        return __generator(this, function (_a) {
+            switch (_a.label) {
+                case 0:
+                    if (times > 2000)
+                        return [2 /*return*/];
+                    times++;
+                    try {
+                        if (!antd || !moment || !React || !ReactDOM)
+                            return [2 /*return*/, void pageInit()];
+                    }
+                    catch (_b) {
+                        return [2 /*return*/, setTimeout(pageInit, 20)];
+                    }
+                    return [4 /*yield*/, selectCinema()];
+                case 1:
+                    _a.sent();
+                    smartDate = moment().add(1, 'days');
+                    if (getQuery('smartDate'))
+                        smartDate = moment(getQuery('smartDate'));
+                    if (!(smartDate.format('M') !== moment().format('M'))) return [3 /*break*/, 3];
+                    return [4 /*yield*/, selectMonth(smartDate.format('M'))];
+                case 2:
+                    _a.sent();
+                    _a.label = 3;
+                case 3:
+                    updateQuery({ smartDate: smartDate.format('YYYY-MM-DD') });
+                    return [4 /*yield*/, editSomeDay()];
+                case 4:
+                    _a.sent();
+                    return [4 /*yield*/, autoMax()];
+                case 5:
+                    _a.sent();
+                    ReactDOM.render(React.createElement(APP, null), dom);
+                    document.querySelector('#schedule-form .p10').appendChild(dom);
+                    updateQuery({ refreshTimes: null });
+                    return [2 /*return*/];
+            }
+        });
+    });
+}
+pageInit();
+$(window).error(function (e) {
+    var _a, _b, _c;
+    if ((_b = (_a = e.originalEvent) === null || _a === void 0 ? void 0 : _a.message) === null || _b === void 0 ? void 0 : _b.includes("Cannot set property 'available' of undefined")) {
+        var refreshTimes = (_c = getQuery('refreshTimes', 'number')) !== null && _c !== void 0 ? _c : 0;
+        if (refreshTimes > 10)
+            return;
+        updateQuery({ refreshTimes: refreshTimes > 0 ? refreshTimes : null });
+        window.location.reload();
+    }
+});

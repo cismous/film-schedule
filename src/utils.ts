@@ -6,7 +6,8 @@ const sleep = (ts = 0) => new Promise((resolve) => setTimeout(resolve, ts))
 /**
  * 检查当前是否加载完成
  */
-const spinnerLoaded = () => {
+const spinnerLoaded = async () => {
+  await sleep(50)
   return new Promise((resolve) => {
     const check = () => {
       setTimeout(() => {
@@ -83,5 +84,136 @@ function updateQuery<T extends { [key: string]: any }>(params: T, action: 'repla
     const path = `${protocol}//${host}${pathname}${decodeURIComponent(search)}`
     if (action === 'replace') window.history.replaceState({ path }, '', path)
     else window.history.pushState({ path }, '', path)
+  }
+}
+
+/**
+ * 异步轮训获取dom列表
+ * @param selector 选择器
+ */
+async function queryDomsAsync(selector: string): Promise<HTMLDivElement[]> {
+  let times = 0
+  async function init(): Promise<HTMLDivElement[]> {
+    if (times >= 1000) return []
+    times++
+
+    const dom = document.querySelectorAll<HTMLDivElement>(selector)
+    if (dom?.length) return Array.from(dom)
+    return new Promise((resolve) => setTimeout(async () => resolve(await init()), 15))
+  }
+  return init()
+}
+
+/**
+ * 异步轮训获取dom
+ * @param selector 选择器
+ */
+async function queryDomAsync(selector: string): Promise<Element> {
+  let times = 0
+  async function init(): Promise<Element> {
+    if (times >= 1000) return null
+    times++
+
+    const dom = document.querySelector(selector)
+    if (dom) return dom
+    return new Promise((resolve) => setTimeout(async () => resolve(await init()), 15))
+  }
+  return init()
+}
+
+/**
+ * 异步等待dom消失
+ * @param selector 选择器
+ */
+async function waitDomDisappear(selector: string, interval = 15, limitTimes = 1000): Promise<Element> {
+  let times = 0
+  async function init(): Promise<Element> {
+    if (limitTimes && times >= limitTimes) return
+    times++
+
+    const dom = document.querySelector(selector)
+    if (dom) return new Promise((resolve) => setTimeout(async () => resolve(await init()), interval))
+    return
+  }
+  return init()
+}
+
+/**
+ * 选择排片月份
+ * @param month 月份
+ */
+async function selectMonth(month: string) {
+  const dom = (await queryDomsAsync('#schedule-form .input-group.date .input-group-addon')) as HTMLDivElement[]
+  dom[0].click()
+  const monthDomList = await queryDomsAsync('#schedule-form .bootstrap-datetimepicker-widget .month')
+  if (monthDomList.length) {
+    for (const item of Array.from(monthDomList)) {
+      if (item.textContent === `${month}月`) {
+        ;(item as HTMLDivElement).click()
+        const dom = document.querySelector('#schedule-form #search-schedule') as HTMLDivElement
+        dom?.click()
+        await spinnerLoaded()
+        document.body.focus()
+        break
+      }
+    }
+  }
+}
+
+/**
+ * 选择每个影厅
+ * @param cinemaId 影厅id
+ */
+async function selectCinema(cinemaId?: string) {
+  if (!cinemaId) cinemaId = getQuery<string>('cinemaId')
+  if (!cinemaId) return
+
+  await spinnerLoaded()
+
+  return new Promise(async (resolve) => {
+    let times = 0
+    const execute = () => {
+      setTimeout(async () => {
+        times++
+        if (times > 1000) return void resolve()
+
+        const dom: any = (await queryDomsAsync('#cinemaId'))[0]
+        if (dom.options.length === 0) return void execute()
+        for (let i = 0; i < dom.options.length; i++) {
+          const opt = dom.options[i]
+          if (opt.value === cinemaId) {
+            dom.selectedIndex = i
+            document.getElementById('select2-cinemaId-container').textContent = opt.textContent
+            document.getElementById('search-schedule').click()
+            resolve()
+            break
+          }
+        }
+      }, 20)
+    }
+    execute()
+  })
+}
+
+/**
+ * 编辑某天的影片
+ * @param date 距离当天时间天数的偏移值
+ */
+async function editSomeDay(_date?: string) {
+  const preDate = moment(getQuery<string>('smartDate'))
+  const editDate = moment(_date || preDate)
+  if (editDate.format('M') !== preDate.format('M')) await selectMonth(editDate.format('M'))
+
+  const calendarList = await queryDomsAsync('#calendar .calendar-date li')
+  for (const item of calendarList) {
+    if (item.querySelector('.date')?.textContent === editDate.format('D')) {
+      const btnList = Array.from(item.querySelectorAll('button'))
+      const editBtn = btnList.find((item) => item.textContent === '编辑')
+      const viewBtn = btnList.find((item) => item.textContent === '查看')
+      const addBtn = btnList.find((item) => item.textContent === '添加')
+      const btn = editBtn || viewBtn || addBtn
+      btn?.click()
+      updateQuery({ smartDate: editDate.format('YYYY-MM-DD') })
+    }
   }
 }

@@ -12,6 +12,7 @@
     "128": "lib/images/logo.png"
   },
   "web_accessible_resources": [
+    "lib/antd.min.css",
     "lib/utils.js",
     "lib/proxy-ajax.js",
     "lib/react.production.min.js",
@@ -24,17 +25,6 @@
       "matches": ["http://showtime-prd-cmc.wandafilm.com/*"],
       "run_at": "document_start",
       "js": ["/lib/init.js"]
-    },
-    {
-      "matches": ["http://showtime-prd-cmc.wandafilm.com/*"],
-      "css": ["/lib/antd.min.css"],
-      "js": [
-        "/lib/utils.js",
-        "/lib/react.production.min.js",
-        "/lib/react-dom.production.min.js",
-        "/lib/antd.min.js",
-        "/lib/page.js"
-      ]
     }
   ],
   "minimum_chrome_version": "80",
